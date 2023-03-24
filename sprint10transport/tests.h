@@ -81,12 +81,13 @@ namespace tests {
             std::cin.rdbuf(testdata.rdbuf());
             std::string placeholder;
             std::getline(std::cin, placeholder);
+
             transport_catalogue a(placeholder);
 
-            Coordinates getted = a.FindStop("Biryulyovo Passazhirskaya");
-            Coordinates correct{ 55.580999 , 37.659164 };
+            geo::Coordinates getted = a.FindStop("Biryulyovo Passazhirskaya").coords_;
+            geo::Coordinates correct{ 55.580999 , 37.659164 };
             ASSERT_HINT(getted == correct, "Error in reading Stop or coordinates\n");
-            getted = a.FindStop("Universam");
+            getted = a.FindStop("Universam").coords_;
             correct = { 55.587655 , 37.645687 };
             ASSERT_HINT(getted == correct, "Error in reading Stop or coordinates\n");
         }
@@ -94,10 +95,18 @@ namespace tests {
 
     void ReadBuses() {
         {       // read Bus
-            std::vector<std::string> rows(3);
-            rows[0] = "2\n";
+            std::vector<std::string> rows(11);
+            rows[0] = "10\n";
             rows[1] = "Bus 256: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye\n";
             rows[2] = "Bus 750: Tolstopaltsevo - Marushkino - Rasskazovka\n";
+            rows[3] = "Stop Tolstopaltsevo: 55.611087, 37.208290\n";
+            rows[4] = "Stop Marushkino: 55.595884, 37.209755\n";
+            rows[5] = "Stop Rasskazovka: 55.632761, 37.333324\n";
+            rows[6] = "Stop Biryulyovo Zapadnoye: 55.574371, 37.651700\n";
+            rows[7] = "Stop Biryusinka: 55.581065, 37.648390\n";
+            rows[8] = "Stop Universam: 55.587655, 37.645687\n";
+            rows[9] = "Stop Biryulyovo Tovarnaya: 55.592028, 37.653656\n";
+            rows[10] = "Stop Biryulyovo Passazhirskaya: 55.580999, 37.659164\n";
             std::string acc = std::accumulate(
                 rows.begin(), rows.end(),
                 std::string("")
@@ -106,17 +115,118 @@ namespace tests {
             std::cin.rdbuf(testdata.rdbuf());
             std::string placeholder;
             std::getline(std::cin, placeholder);
+
             transport_catalogue a(placeholder);
 
-            std::string getted = a.FindBus("256");
+            std::string getted = a.FindBus("256").raw_route_;
             std::string correct = "Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye";
             ASSERT_HINT(getted.compare(correct) == 0, "Error in reading Bus");
+            getted = a.FindBus("750").raw_route_;
+            correct = "Tolstopaltsevo - Marushkino - Rasskazovka";
+            ASSERT_HINT(getted.compare(correct) == 0, "Error in reading Bus");
+        }
+    }
+    void ParseRoutes() {
+        {
+            std::vector<std::string> rows(5);
+            rows[0] = "4\n";
+            rows[1] = "Bus 750: Tolstopaltsevo - Marushkino - Rasskazovka\n";
+            rows[2] = "Stop Rasskazovka: 55.632761, 37.333324\n";
+            rows[3] = "Stop Tolstopaltsevo: 55.611087, 37.208290\n";
+            rows[4] = "Stop Marushkino: 55.595884, 37.209755\n";
+            std::string acc = std::accumulate(
+                rows.begin(), rows.end(),
+                std::string("")
+            );
+            std::istringstream testdata(acc);
+            std::cin.rdbuf(testdata.rdbuf());
+            std::string placeholder;
+            std::getline(std::cin, placeholder);
+
+            transport_catalogue a(placeholder);
+
+            transport_catalogue::Route getted = a.GetRoute("750");
+            transport_catalogue::Route correct;
+            transport_catalogue::Stop s1{ "Tolstopaltsevo", { 55.611087, 37.208290} };
+            transport_catalogue::Stop s2{ "Marushkino", { 55.595884, 37.209755} };
+            transport_catalogue::Stop s3{ "Rasskazovka", { 55.632761, 37.333324} };
+            transport_catalogue::Stop s4{ "Marushkino", { 55.611087, 37.208290} };
+            transport_catalogue::Stop s5{ "Tolstopaltsevo", { 55.595884, 37.209755} };
+            correct.way_.reserve(5);
+            correct.way_.push_back(&s1);
+            correct.way_.push_back(&s2);
+            correct.way_.push_back(&s3);
+            correct.way_.push_back(&s4);
+            correct.way_.push_back(&s5);
+            correct.unique_stops_ = 3;
+            correct.length_ = 20939.483046751142;
+
+            bool b1 = getted.length_ == correct.length_;
+            bool b2 = getted.unique_stops_ == correct.unique_stops_;
+            bool b3 = getted.way_[0]->name_ == correct.way_[0]->name_;
+            bool b4 = getted.way_[1]->name_ == correct.way_[1]->name_;
+            bool b5 = getted.way_[2]->name_ == correct.way_[2]->name_;
+            bool b6 = getted.way_[3]->name_ == correct.way_[3]->name_;
+            bool b7 = getted.way_[4]->name_ == correct.way_[4]->name_;
+
+            ASSERT_HINT(b1 && b2 && b3 && b4 && b5 && b6 && b7, 
+                "Error in parse linear route");
+        }
+        {
+            std::vector<std::string> rows(7);
+            rows[0] = "6\n";
+            rows[1] = "Bus 256: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye\n";
+            rows[2] = "Stop Biryulyovo Zapadnoye: 55.574371, 37.651700\n";
+            rows[3] = "Stop Biryusinka: 55.581065, 37.648390\n";
+            rows[4] = "Stop Universam: 55.587655, 37.645687\n";
+            rows[5] = "Stop Biryulyovo Tovarnaya: 55.592028, 37.653656\n";
+            rows[6] = "Stop Biryulyovo Passazhirskaya: 55.580999, 37.659164\n";
+            std::string acc = std::accumulate(
+                rows.begin(), rows.end(),
+                std::string("")
+            );
+            std::istringstream testdata(acc);
+            std::cin.rdbuf(testdata.rdbuf());
+            std::string placeholder;
+            std::getline(std::cin, placeholder);
+
+            transport_catalogue a(placeholder);
+
+            transport_catalogue::Route getted = a.GetRoute("256");
+            transport_catalogue::Route correct;
+            transport_catalogue::Stop s1{ "Biryulyovo Zapadnoye", { 55.574371, 37.651700} };
+            transport_catalogue::Stop s2{ "Biryusinka", { 55.581065, 37.651700} };
+            transport_catalogue::Stop s3{ "Universam", { 55.587655, 37.645687} };
+            transport_catalogue::Stop s4{ "Biryulyovo Tovarnaya", { 55.592028, 37.653656} };
+            transport_catalogue::Stop s5{ "Biryulyovo Passazhirskaya", { 55.580999, 37.659164} };
+            correct.way_.reserve(6);
+            correct.way_.push_back(&s1);
+            correct.way_.push_back(&s2);
+            correct.way_.push_back(&s3);
+            correct.way_.push_back(&s4);
+            correct.way_.push_back(&s5);
+            correct.way_.push_back(&s1);
+            correct.unique_stops_ = 5;
+            correct.length_ = 4371.0172608446010;
+
+            bool b1 = getted.length_ == correct.length_;
+            bool b2 = getted.unique_stops_ == correct.unique_stops_;
+            bool b3 = getted.way_[0]->name_ == correct.way_[0]->name_;
+            bool b4 = getted.way_[1]->name_ == correct.way_[1]->name_;
+            bool b5 = getted.way_[2]->name_ == correct.way_[2]->name_;
+            bool b6 = getted.way_[3]->name_ == correct.way_[3]->name_;
+            bool b7 = getted.way_[4]->name_ == correct.way_[4]->name_;
+            bool b8 = getted.way_[5]->name_ == correct.way_[5]->name_;
+
+            ASSERT_HINT(b1 && b2 && b3 && b4 && b5 && b6 && b7 && b8, 
+                "Error in parse circular route");
         }
     }
 
     void AllTests() {
         RUN_TEST(ReadStop);
         RUN_TEST(ReadBuses);
+        RUN_TEST(ParseRoutes);
     }
 
 }		// namespace tests

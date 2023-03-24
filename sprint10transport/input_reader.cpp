@@ -42,9 +42,8 @@ namespace InputReader {
 		std::string name = str.substr(5, EndOfName - 5);
 		double lat = std::stod(str.substr(EndOfName + 2, CoordDelim));
 		double lon = std::stod(str.substr(CoordDelim + 1));
-		Coordinates coords{ lat, lon };
 
-		tr_cat_->AddStop(name, coords);
+		tr_cat_->AddStop(name, lat, lon);
 	}
 
 	void input_reader::TrimSpaces(std::string& s) {

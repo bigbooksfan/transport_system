@@ -42,7 +42,6 @@ namespace InputReader {
 		void ReadStop(std::string& str);
 		void ReadBus(std::string& str);
 		static inline void TrimSpaces(std::string& s);
-
 	};
 
 }			// namespace InputReader
