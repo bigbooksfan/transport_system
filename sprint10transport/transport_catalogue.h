@@ -6,7 +6,7 @@
 #include <set>
 #include <vector>
 #include <string>
-#include <string_view>
+#include <sstream>
 #include <functional>
 
 #include "geo.h"
@@ -72,6 +72,9 @@ private:			// fields
 
 	// HINT : map < Stop1* , map < Stop2* , distance > >
 	std::map<Stop*, std::map<Stop*, double>> distances_;
+
+public:				// fields for TESTS
+	std::vector<std::string> outrows_;
 
 public:				// constructors
 	transport_catalogue(std::string& number);

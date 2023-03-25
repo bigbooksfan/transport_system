@@ -2,18 +2,20 @@
 
 #include "stat_reader.h"
 
-stat_reader::stat_reader(size_t num, transport_catalogue* tr_cat)
-	: tr_cat_(tr_cat), num_(num) { 
+stat_reader::stat_reader(size_t num, transport_catalogue* tr_cat, bool is_test)
+	: num_(num), tr_cat_(tr_cat), is_test_(is_test) { 
 	CallExecution(num);
 }
 
-stat_reader::stat_reader(std::string& num, transport_catalogue* tr_cat) 
-	: tr_cat_(tr_cat), num_(5) {
+stat_reader::stat_reader(std::string& num, transport_catalogue* tr_cat, bool is_test)
+	: num_(std::stoi(num)), tr_cat_(tr_cat), is_test_(is_test) {
 	CallExecution(std::stoi(num));
 }
 
 void stat_reader::CallExecution(size_t num) {
 	buses_.reserve(num_);
+	if (is_test_)
+		tr_cat_->outrows_.reserve(num);
 	for (size_t i = 0; i < num; ++i) {
 		ReadLine();
 	}
@@ -35,15 +37,12 @@ void stat_reader::ReadLine() {
 }
 
 void stat_reader::PrintLine(std::string& bus) {
-	transport_catalogue::Route tmp = tr_cat_->GetRoute(bus);
-	
-	std::cout << "Bus " << bus << ": ";
-	if (tmp.way_.empty()) {
-		std::cout << "not found" << std::endl;
+	if (is_test_) {
+		std::stringstream os;
+		PrintLineInner(os, bus);
+		tr_cat_->outrows_.push_back(os.str());			
 	}
 	else {
-		std::cout << tmp.way_.size() << " stops on route, "
-			<< tmp.unique_stops_ << " unique stops, "
-			<< tmp.length_ << " route length" << std::endl;
+		PrintLineInner(std::cout, bus);
 	}
 }

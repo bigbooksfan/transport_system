@@ -16,6 +16,9 @@
     <Filter Include="Header Files\DevOps">
       <UniqueIdentifier>{8a77ef78-b732-41b8-a183-298753bec950}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Tests">
+      <UniqueIdentifier>{64b7c305-044b-4c76-b17b-d8992d96f967}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="main.cpp">
@@ -50,5 +53,19 @@
     <ClInclude Include="tests.h">
       <Filter>Header Files\DevOps</Filter>
     </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="tests\tsA_case1_input.txt">
+      <Filter>Resource Files\Tests</Filter>
+    </Text>
+    <Text Include="tests\tsA_case1_output.txt">
+      <Filter>Resource Files\Tests</Filter>
+    </Text>
+    <Text Include="tests\tsA_case2_input.txt">
+      <Filter>Resource Files\Tests</Filter>
+    </Text>
+    <Text Include="tests\tsA_case2_output.txt">
+      <Filter>Resource Files\Tests</Filter>
+    </Text>
   </ItemGroup>
 </Project>

@@ -62,7 +62,6 @@ namespace InputReader {
 					return !std::isspace(ch);
 				}
 			).base(), s.end()
-					);
+		);
 	}
-
-}
+}			// namespace InputReader

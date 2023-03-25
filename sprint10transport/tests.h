@@ -4,6 +4,7 @@
 #include <sstream>
 #include <vector>
 #include <numeric>
+#include <fstream>
 
 #include "input_reader.h"
 
@@ -127,7 +128,7 @@ namespace tests {
         }
     }
     void ParseRoutes() {
-        {
+        {           // linear route
             std::vector<std::string> rows(5);
             rows[0] = "4\n";
             rows[1] = "Bus 750: Tolstopaltsevo - Marushkino - Rasskazovka\n";
@@ -172,7 +173,7 @@ namespace tests {
             ASSERT_HINT(b1 && b2 && b3 && b4 && b5 && b6 && b7, 
                 "Error in parse linear route");
         }
-        {
+        {       // circular route
             std::vector<std::string> rows(7);
             rows[0] = "6\n";
             rows[1] = "Bus 256: Biryulyovo Zapadnoye > Biryusinka > Universam > Biryulyovo Tovarnaya > Biryulyovo Passazhirskaya > Biryulyovo Zapadnoye\n";
@@ -223,10 +224,82 @@ namespace tests {
         }
     }
 
+    void FileTest(std::string fname_prefix) {
+        std::ifstream input("tests/" + fname_prefix + "_input.txt");
+
+        // data from file
+        std::string str;
+        std::getline(input, str);
+        size_t num = std::stoi(str);
+
+        std::vector<std::string> rows(num + 1);
+        rows[0] = str + '\n';
+        for (size_t i = 0; i < num; ++i) {
+            std::getline(input, str);
+            rows[i + 1] = str + '\n';
+        }
+
+        std::string acc = std::accumulate(
+            rows.begin(), rows.end(),
+            std::string("")
+        );
+        std::istringstream testdata(acc);
+        std::cin.rdbuf(testdata.rdbuf());
+        std::string placeholder;
+        std::getline(std::cin, placeholder);
+
+        transport_catalogue a(placeholder);
+
+        // querries from file
+        std::getline(input, str);
+        num = std::stoi(str);
+
+        rows.clear();
+        rows.resize(num + 1);
+        rows[0] = str + '\n';
+        for (size_t i = 0; i < num; ++i) {
+            std::getline(input, str);
+            rows[i + 1] = str + '\n';
+        }
+        input.close();
+
+        acc = std::accumulate(
+            rows.begin(), rows.end(),
+            std::string("")
+        );
+        rows.clear();
+        std::istringstream testdata1(acc);
+        std::cin.rdbuf(testdata1.rdbuf());
+        std::getline(std::cin, placeholder);
+
+        stat_reader reader(placeholder, &a, true);
+
+        // results from file
+        std::ifstream input1("tests/" + fname_prefix + "_output.txt");
+
+        // data from file
+        rows.resize(num);
+        for (size_t i = 0; i < num; ++i) {
+            std::getline(input1, str);
+            rows[i] = str + '\n';
+        }
+
+        for (size_t i = 0; i < num; ++i) {
+            ASSERT_HINT(a.outrows_[i] == rows[i], "Error in tests from file");
+        }
+        std::cerr << "file tests/" + fname_prefix + "_output.txt DONE\n";
+    }
+
+    void FileTests() {
+        FileTest("tsA_case1");
+        FileTest("tsA_case2");        
+    }
+
     void AllTests() {
         RUN_TEST(ReadStop);
         RUN_TEST(ReadBuses);
         RUN_TEST(ParseRoutes);
+        RUN_TEST(FileTests);
     }
 
 }		// namespace tests

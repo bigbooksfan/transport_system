@@ -5,17 +5,21 @@
 #include "stat_reader.h"
 #include "tests.h"
 
-//#define TESTMODE
+#define TESTMODE
 
 int main() {
-	//tests::AllTests();
 
+#ifdef TESTMODE
+	tests::AllTests();
+
+#else
 	std::string n;
-	//std::cin >> n;
 	std::getline(std::cin, n);
 	transport_catalogue Catalogue(n);
 	std::getline(std::cin, n);
 	stat_reader reader(n, &Catalogue);
+
+#endif
 
 	return 0;
 }
