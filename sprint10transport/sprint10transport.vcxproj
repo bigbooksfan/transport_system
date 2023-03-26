@@ -150,6 +150,9 @@
     <Text Include="tests\tsB_case1_output.txt" />
     <Text Include="tests\tsB_case2_input.txt" />
     <Text Include="tests\tsB_case2_output.txt" />
+    <Text Include="tests\tsC_case1_input.txt" />
+    <Text Include="tests\tsC_case1_output1.txt" />
+    <Text Include="tests\tsC_case1_output2.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

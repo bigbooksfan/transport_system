@@ -2,17 +2,17 @@
 
 #include "stat_reader.h"
 
-stat_reader::stat_reader(size_t num, transport_catalogue* tr_cat, bool is_test)
+transport_system::output::stat_reader::stat_reader(size_t num, transport_catalogue* tr_cat, bool is_test)
 	: num_(num), tr_cat_(tr_cat), is_test_(is_test) { 
 	CallExecution(num);
 }
 
-stat_reader::stat_reader(std::string& num, transport_catalogue* tr_cat, bool is_test)
+transport_system::output::stat_reader::stat_reader(std::string& num, transport_catalogue* tr_cat, bool is_test)
 	: num_(std::stoi(num)), tr_cat_(tr_cat), is_test_(is_test) {
 	CallExecution(std::stoi(num));
 }
 
-void stat_reader::CallExecution(size_t num) {
+void transport_system::output::stat_reader::CallExecution(size_t num) {
 	querries_.reserve(num_);
 	if (is_test_) {
 		tr_cat_->outrows_.reserve(num);
@@ -39,7 +39,7 @@ void stat_reader::CallExecution(size_t num) {
 	}
 }
 
-void stat_reader::ReadLine() {
+void transport_system::output::stat_reader::ReadLine() {
 	std::string tmp;
 	std::getline(std::cin, tmp);
 
@@ -51,7 +51,7 @@ void stat_reader::ReadLine() {
 	querries_.push_back(tmp);
 }
 
-void stat_reader::PrintBus(std::string_view bus) {
+void transport_system::output::stat_reader::PrintBus(std::string_view bus) {
 	if (is_test_ == false) {
 		PrintBusInner(std::cout, bus);
 	}
@@ -62,7 +62,7 @@ void stat_reader::PrintBus(std::string_view bus) {
 	}
 }
 
-void stat_reader::PrintStop(std::string_view stop) {
+void transport_system::output::stat_reader::PrintStop(std::string_view stop) {
 	if (is_test_ == false) {
 		PrintStopInner(std::cout, stop);
 	}

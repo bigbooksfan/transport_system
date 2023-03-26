@@ -15,9 +15,10 @@ int main() {
 #else
 	std::string n;
 	std::getline(std::cin, n);
-	transport_catalogue Catalogue(n);
+	
+	transport_system::transport_catalogue Catalogue(n);
 	std::getline(std::cin, n);
-	stat_reader reader(n, &Catalogue);
+	transport_system::output::stat_reader reader(n, &Catalogue);
 
 #endif
 
