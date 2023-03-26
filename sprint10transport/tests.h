@@ -292,7 +292,9 @@ namespace tests {
 
     void FileTests() {
         FileTest("tsA_case1");
-        FileTest("tsA_case2");        
+        FileTest("tsA_case2");   
+        FileTest("tsB_case1");
+        FileTest("tsB_case2");        
     }
 
     void AllTests() {

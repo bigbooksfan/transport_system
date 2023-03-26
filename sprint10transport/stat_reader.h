@@ -2,6 +2,7 @@
 
 #include <vector>
 #include <string>
+#include <string_view>
 
 #include "transport_catalogue.h"
 
@@ -22,9 +23,10 @@ class stat_reader {
 private:			// fields
 	const size_t num_;
 	transport_catalogue* tr_cat_;
-	std::vector<std::string> buses_;
+	std::vector<std::string> querries_;
 
 	const std::string BusKeyWord = "Bus ";
+	const std::string StopKeyWord = "Stop ";
 
 	bool is_test_ = false;
 public:				// constructors
@@ -35,14 +37,19 @@ public:				// constructors
 private:
 	void CallExecution(size_t num);
 	void ReadLine();
-	void PrintLine(std::string& bus);
+
+	void PrintBus(std::string_view bus);
 	template <typename OS>
-	void PrintLineInner(OS& os, std::string& bus);
+	void PrintBusInner(OS& os, std::string_view bus);
+
+	void PrintStop(std::string_view stop);
+	template <typename OS>
+	void PrintStopInner(OS& os, std::string_view stop);
 };			// class stat_reader
 
 template <typename OS>
-void stat_reader::PrintLineInner(OS& os, std::string& bus) {
-	transport_catalogue::Route tmp = tr_cat_->GetRoute(bus);
+void stat_reader::PrintBusInner(OS& os, std::string_view bus) {
+	transport_catalogue::Route tmp = tr_cat_->GetRoute(std::string(bus));
 	os << "Bus " << bus << ": ";
 	if (tmp.way_.empty()) {
 		os << "not found" << std::endl;
@@ -53,4 +60,29 @@ void stat_reader::PrintLineInner(OS& os, std::string& bus) {
 			<< tmp.unique_stops_ << " unique stops, "
 			<< tmp.length_ << " route length" << std::endl;
 	}
+}
+
+template<typename OS>
+void stat_reader::PrintStopInner(OS& os, std::string_view stop) {
+	std::string tmp = std::string(stop);
+	os << "Stop " << stop << ": "; 
+	try {
+		tr_cat_->FindStop(tmp);
+	}
+	catch (std::logic_error&) {
+		os << "not found" << std::endl;
+		return;
+	}
+	std::set<std::string> buses = tr_cat_->GetBusesOfStop(tmp);
+	
+	if (buses.empty()) {
+		os << "no buses";
+	}
+	else {
+		os << "buses";
+		for (const std::string bus : buses) {
+			os << " " << bus;
+		}
+	}
+	os << std::endl;
 }

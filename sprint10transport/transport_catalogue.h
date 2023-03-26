@@ -21,11 +21,6 @@ public:			// structs
 		Stop(const std::string& name = "", const geo::Coordinates& coords = geo::Coordinates{})
 			: name_(name), coords_(coords) { };
 
-		//Stop(const Stop&) = default;
-		//Stop(Stop&&) = default;
-		//Stop& operator=(const Stop&) = default;
-		//~Stop() = default;
-
 		bool operator<(const Stop& other) const;
 		bool operator==(const Stop& other) const;
 	};
@@ -43,7 +38,6 @@ public:			// structs
 
 	// HINT : struct { vector<sv> stops , unique_stops, length }
 	struct Route {
-		//std::vector<std::string_view> way_;
 		std::vector<Stop*> way_;
 		size_t unique_stops_ = 0;
 		double length_ = 0;
@@ -64,6 +58,8 @@ private:			// fields
 	std::unordered_set<Bus, StringHasher<Bus>> buses_;
 	// HINT : u_map < bus name , vector < string_view Stops> >
 	std::unordered_map<std::string, Route> routes_;
+	// HINT : u_map < Stop* , set < Bus* > >
+	std::unordered_map<Stop*, std::unordered_set<Bus*>> buses_on_stop_;
 	Route dummy_;
 	Route empty_;
 
@@ -73,7 +69,7 @@ private:			// fields
 	// HINT : map < Stop1* , map < Stop2* , distance > >
 	std::map<Stop*, std::map<Stop*, double>> distances_;
 
-public:				// fields for TESTS
+public:				// field for TESTS
 	std::vector<std::string> outrows_;
 
 public:				// constructors
@@ -84,8 +80,9 @@ public:				// methods
 	void AddBus(const std::string& name, const std::string& raw_desc);
 	void AddStop(const std::string& name, const double lat, const double lon);
 		
-	// Route information out
-	const Route& GetRoute(const std::string& BusName);
+	// information out
+	const Route& GetRoute(const std::string& BusName);	
+	const std::set<std::string> GetBusesOfStop(const std::string StopName);
 
 	const Stop& FindStop(const std::string& name) const;
 	const Bus& FindBus(const std::string& name) const;
@@ -100,5 +97,7 @@ private:			// methods
 	size_t CalcUniques(const Route& route);
 	void CalcDistances(Route& route);
 	double DistBetween(Stop*& a, Stop*& b);
+
+	void PutBusesOnStop(const Bus& bus);
 };
 

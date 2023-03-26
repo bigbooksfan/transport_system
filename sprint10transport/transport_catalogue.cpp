@@ -42,29 +42,39 @@ const transport_catalogue::Bus& transport_catalogue::FindBus(
 }
 
 void transport_catalogue::ParseRoutes() {
-	for (const auto& bus : buses_) {
+	for (const Bus& bus : buses_) {
 		if (routes_.count(bus.name_) != 0)
 			throw std::logic_error("Bus name is not unique");
 
-		if (		// circular route
-			bus.raw_route_.find(BusCircleDelimeter) != std::string::npos &&
-			bus.raw_route_.find(BusLineDelimeter) == std::string::npos) {
-			
+		bool circular = bus.raw_route_.find(BusCircleDelimeter) != std::string::npos;
+		bool linear = bus.raw_route_.find(BusLineDelimeter) != std::string::npos;
+
+		if (circular && linear) {
+			throw std::logic_error("Raw route is both linear and circular");
+		}		
+		if (!circular && !linear) {
+			throw std::logic_error("Raw route is not linear or circular");
+		}
+
+		if (circular) {
 			dummy_ = ParseCircularRoute(bus.raw_route_);
 			routes_.insert({ bus.name_, dummy_});
-			continue;
 		}
-
-		if (		// linear route
-			bus.raw_route_.find(BusCircleDelimeter) == std::string::npos &&
-			bus.raw_route_.find(BusLineDelimeter) != std::string::npos) {
-
+		else {		// linear route
 			dummy_ = ParseLinearRoute(bus.raw_route_);
 			routes_.insert({ bus.name_, dummy_ });
-			continue;
 		}
 
-		throw std::logic_error("Raw route is both linear and circular or none of them");
+		PutBusesOnStop(bus);
+	}
+}
+
+void transport_catalogue::PutBusesOnStop(const Bus& bus) {
+	for (Stop* stop : dummy_.way_) {
+		if (buses_on_stop_.count(stop) == 0) {
+			buses_on_stop_.emplace(stop, std::unordered_set<Bus*>{});
+		}
+		buses_on_stop_.at(stop).insert(const_cast<Bus*>(&bus));
 	}
 }
 
@@ -122,6 +132,24 @@ transport_catalogue::Route transport_catalogue::ParseCircularRoute(
 	ret.way_.shrink_to_fit();
 	ret.unique_stops_ = CalcUniques(ret);
 	CalcDistances(ret);
+	return ret;
+}
+
+const std::set<std::string> transport_catalogue::GetBusesOfStop(const std::string StopName) {
+	std::set<std::string> ret;
+
+	std::unordered_set<Stop, StringHasher<Stop>>::iterator It = stops_.find(StopName);
+	if (It != stops_.end()) {
+		const transport_catalogue::Stop* cpt = &(*It);
+		transport_catalogue::Stop* pt =
+			const_cast<transport_catalogue::Stop*>(cpt);
+		if (buses_on_stop_.count(pt)) {
+			for (const Bus* i : buses_on_stop_.at(pt)) {
+				ret.insert(i->name_);
+			}
+		}
+	}
+
 	return ret;
 }
 

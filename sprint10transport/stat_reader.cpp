@@ -13,36 +13,62 @@ stat_reader::stat_reader(std::string& num, transport_catalogue* tr_cat, bool is_
 }
 
 void stat_reader::CallExecution(size_t num) {
-	buses_.reserve(num_);
-	if (is_test_)
+	querries_.reserve(num_);
+	if (is_test_) {
 		tr_cat_->outrows_.reserve(num);
+	}
+	// read
 	for (size_t i = 0; i < num; ++i) {
 		ReadLine();
 	}
-	for (std::string& bus : buses_) {
-		PrintLine(bus);
+
+	// print
+	for (std::string& querry : querries_) {
+		size_t sz = querry.size();
+
+		if (querry[0] == BusKeyWord[0]) {
+			size_t b = BusKeyWord.size();
+			std::string_view tmp(&querry[b], sz - b);
+			PrintBus(tmp);
+		}
+		if (querry[0] == StopKeyWord[0]) {
+			size_t b = StopKeyWord.size();
+			std::string_view tmp(&querry[b], sz - b);
+			PrintStop(tmp);
+		}
 	}
 }
 
 void stat_reader::ReadLine() {
 	std::string tmp;
 	std::getline(std::cin, tmp);
-	size_t sz = tmp.size();
 
-	if (tmp.compare(0, BusKeyWord.size(), BusKeyWord) == 0) {
-		buses_.push_back(tmp.substr(BusKeyWord.size(), sz - BusKeyWord.size()));
-		return;
+	if (tmp.compare(0, BusKeyWord.size(), BusKeyWord) != 0 &&
+		tmp.compare(0, StopKeyWord.size(), StopKeyWord) != 0) {
+		throw std::logic_error("Incorrect string in ReadLine()");
 	}
-	throw std::logic_error("Incorrect string in ReadLine()");
+	
+	querries_.push_back(tmp);
 }
 
-void stat_reader::PrintLine(std::string& bus) {
-	if (is_test_) {
-		std::stringstream os;
-		PrintLineInner(os, bus);
-		tr_cat_->outrows_.push_back(os.str());			
+void stat_reader::PrintBus(std::string_view bus) {
+	if (is_test_ == false) {
+		PrintBusInner(std::cout, bus);
 	}
 	else {
-		PrintLineInner(std::cout, bus);
+		std::stringstream os;
+		PrintBusInner(os, bus);
+		tr_cat_->outrows_.push_back(os.str());
+	}
+}
+
+void stat_reader::PrintStop(std::string_view stop) {
+	if (is_test_ == false) {
+		PrintStopInner(std::cout, stop);
+	}
+	else {
+		std::stringstream os;
+		PrintStopInner(os, stop);
+		tr_cat_->outrows_.push_back(os.str());
 	}
 }
