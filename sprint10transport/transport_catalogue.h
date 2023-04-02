@@ -79,8 +79,7 @@ namespace transport_system {
 		std::vector<std::string> outrows_;
 
 	public:				// constructors
-		transport_catalogue(std::string& number);
-		transport_catalogue(size_t number);
+		transport_catalogue() = default;
 
 	public:				// methods
 		void AddBus(const std::string& name, const std::string& raw_desc);
